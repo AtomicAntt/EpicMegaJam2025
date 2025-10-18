@@ -1,5 +1,6 @@
 #include "MegaJam/Player/PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
+#include "MegaJam/Projectile.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -45,6 +46,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("TurnCamera", this, &APlayerCharacter::TurnCamera);
 	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::LookUp);
+
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::Fire);
 }
 
 void APlayerCharacter::MoveForward(float InputValue) 
@@ -67,4 +70,36 @@ void APlayerCharacter::TurnCamera(float InputValue)
 void APlayerCharacter::LookUp(float InputValue)
 {
 	AddControllerPitchInput(InputValue);
+}
+
+void APlayerCharacter::Fire()
+{
+	if (ProjectileClass)
+	{
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+
+		FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+
+		FRotator MuzzleRotation = CameraRotation;
+		MuzzleRotation.Pitch += 10.0f;
+
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = GetInstigator();
+
+			AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+			if (Projectile)
+			{
+				FVector LaunchDirection = MuzzleRotation.Vector();
+				Projectile->FireInDirection(LaunchDirection);
+			}
+		}
+	}
 }

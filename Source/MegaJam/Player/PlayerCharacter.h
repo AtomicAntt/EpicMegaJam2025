@@ -24,6 +24,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION()
+	void Fire();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	FVector MuzzleOffset;
+
 protected:
 
 	UPROPERTY(EditAnywhere)
@@ -31,6 +37,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	USkeletalMeshComponent* FPSMesh;
+
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	TSubclassOf<class AProjectile> ProjectileClass;
 
 	void MoveForward(float InputValue);
 	void MoveRight(float InputValue);
