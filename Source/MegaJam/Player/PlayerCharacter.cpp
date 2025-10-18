@@ -10,6 +10,15 @@ APlayerCharacter::APlayerCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Player Camera"));
 	Camera->SetupAttachment(RootComponent);
 	Camera->bUsePawnControlRotation = true;
+
+	FPSMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
+	check(FPSMesh != nullptr);
+
+	FPSMesh->SetOnlyOwnerSee(true);
+	FPSMesh->SetupAttachment(Camera);
+
+	FPSMesh->bCastDynamicShadow = false;
+	FPSMesh->CastShadow = false;
 }
 
 // Called when the game starts or when spawned

@@ -29,6 +29,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UCameraComponent* Camera;
 
+	UPROPERTY(EditAnywhere)
+	USkeletalMeshComponent* FPSMesh;
+
 	void MoveForward(float InputValue);
 	void MoveRight(float InputValue);
 	void TurnCamera(float InputValue);
