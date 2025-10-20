@@ -20,6 +20,10 @@ AProjectile::AProjectile()
 
 		CollisionComponent->InitSphereRadius(15.0f);
 
+		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
+
+		CollisionComponent->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+
 		RootComponent = CollisionComponent;
 	}
 
@@ -34,6 +38,26 @@ AProjectile::AProjectile()
 		ProjectileMovementComponent->Bounciness = 0.3f;
 		ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
 	}
+
+	if (!ProjectileMeshComponent)
+	{
+		ProjectileMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMeshComponent"));
+		static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("/Script/Engine.StaticMesh'/Game/Sphere.Sphere'"));
+		if (Mesh.Succeeded())
+		{
+			ProjectileMeshComponent->SetStaticMesh(Mesh.Object);
+		}
+		static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("/Script/Engine.Material'/Game/SphereMaterial.SphereMaterial'"));
+		if (Material.Succeeded())
+		{
+			ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
+		}
+		ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstance);
+		ProjectileMeshComponent->SetRelativeScale3D(FVector(0.09f, 0.09f, 0.09f));
+		ProjectileMeshComponent->SetupAttachment(RootComponent);
+	}
+
+	InitialLifeSpan = 3.0f;
 }
 
 // Called when the game starts or when spawned
@@ -53,5 +77,14 @@ void AProjectile::Tick(float DeltaTime)
 void AProjectile::FireInDirection(const FVector& ShootDirection)
 {
 	ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
+}
+
+void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit) 
+{
+	if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
+	{
+		OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
+	}
+	Destroy();
 }
 
