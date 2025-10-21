@@ -108,9 +108,11 @@ void APlayerCharacter::Fire()
 		FRotator CameraRotation;
 		GetActorEyesViewPoint(CameraLocation, CameraRotation);
 
-		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+		//MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
 
-		FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+		//FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+
+		FVector MuzzleLocation = Gun->GetSocketLocation(TEXT("Fire"));
 
 		FRotator MuzzleRotation = CameraRotation;
 		//MuzzleRotation.Pitch += 5.0f;
@@ -127,6 +129,16 @@ void APlayerCharacter::Fire()
 			{
 				FVector LaunchDirection = MuzzleRotation.Vector();
 				Projectile->FireInDirection(LaunchDirection);
+			}
+		}
+
+		if (FireAnimation != nullptr)
+		{
+			// Get the animation object for the arms mesh
+			UAnimInstance* AnimInstance = FPSMesh->GetAnimInstance();
+			if (AnimInstance != nullptr)
+			{
+				AnimInstance->Montage_Play(FireAnimation, 1.f);
 			}
 		}
 	}

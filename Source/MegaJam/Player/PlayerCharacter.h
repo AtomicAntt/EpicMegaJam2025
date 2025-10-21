@@ -32,6 +32,9 @@ public:
 
 	USkeletalMeshComponent* GetFPSMesh() const { return FPSMesh; }
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	UAnimMontage* FireAnimation;
+
 protected:
 
 	UPROPERTY(EditAnywhere)
