@@ -30,6 +30,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FVector MuzzleOffset;
 
+	USkeletalMeshComponent* GetFPSMesh() const { return FPSMesh; }
+
 protected:
 
 	UPROPERTY(EditAnywhere)
@@ -37,6 +39,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	USkeletalMeshComponent* FPSMesh;
+
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* Gun;
 
 	UPROPERTY(EditDefaultsOnly, Category = Projectile)
 	TSubclassOf<class AProjectile> ProjectileClass;

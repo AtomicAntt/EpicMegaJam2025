@@ -1,4 +1,5 @@
 #include "MegaJam/Player/PlayerCharacter.h"
+#include "MegaJam/SniperRifle.h"
 #include "Camera/CameraComponent.h"
 #include "MegaJam/Projectile.h"
 
@@ -20,12 +21,39 @@ APlayerCharacter::APlayerCharacter()
 
 	FPSMesh->bCastDynamicShadow = false;
 	FPSMesh->CastShadow = false;
+
+	Gun = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Gun"));
+	Gun->SetupAttachment(FPSMesh);
+
+	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, false);
+	Gun->AttachToComponent(FPSMesh, AttachmentRules, FName(TEXT("GripPoint")));
 }
 
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	/*FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = this;
+
+	ASniperRifle* Rifle = GetWorld()->SpawnActor<ASniperRifle>(ASniperRifle::StaticClass(), SpawnParams);
+	if (Rifle)
+	{
+		Rifle->AttachWeapon(this);
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Hello, World!"));
+		}
+	}
+	else 
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("yo"));
+		}
+	}*/
 	
 }
 
