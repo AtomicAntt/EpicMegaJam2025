@@ -27,6 +27,12 @@ public:
 	UFUNCTION()
 	void Fire();
 
+	UFUNCTION()
+	void StopFire();
+
+	UFUNCTION()
+	void HoldFire();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FVector MuzzleOffset;
 
@@ -34,6 +40,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimMontage* FireAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float FireDelay = 0.27f;
 
 protected:
 
@@ -53,4 +62,7 @@ protected:
 	void MoveRight(float InputValue);
 	void TurnCamera(float InputValue);
 	void LookUp(float InputValue);
+	
+private:
+	FTimerHandle FireTimerHandle;
 };

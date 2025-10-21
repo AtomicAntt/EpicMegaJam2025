@@ -75,7 +75,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("TurnCamera", this, &APlayerCharacter::TurnCamera);
 	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::LookUp);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::Fire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::HoldFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::StopFire);
 }
 
 void APlayerCharacter::MoveForward(float InputValue) 
@@ -142,4 +143,18 @@ void APlayerCharacter::Fire()
 			}
 		}
 	}
+}
+
+void APlayerCharacter::HoldFire()
+{
+	GetWorldTimerManager().ClearTimer(FireTimerHandle);
+	GetWorldTimerManager().SetTimer(FireTimerHandle, this, &APlayerCharacter::Fire, FireDelay, true);
+
+	// This is for the first shot
+	Fire();
+}
+
+void APlayerCharacter::StopFire()
+{
+	GetWorldTimerManager().ClearTimer(FireTimerHandle);
 }
