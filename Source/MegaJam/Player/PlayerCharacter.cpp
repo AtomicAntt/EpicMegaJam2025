@@ -1,5 +1,4 @@
 #include "MegaJam/Player/PlayerCharacter.h"
-#include "MegaJam/SniperRifle.h"
 #include "Camera/CameraComponent.h"
 #include "MegaJam/Projectile.h"
 
@@ -33,28 +32,6 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	/*FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-	SpawnParams.Instigator = this;
-
-	ASniperRifle* Rifle = GetWorld()->SpawnActor<ASniperRifle>(ASniperRifle::StaticClass(), SpawnParams);
-	if (Rifle)
-	{
-		Rifle->AttachWeapon(this);
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Hello, World!"));
-		}
-	}
-	else 
-	{
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("yo"));
-		}
-	}*/
-	
 }
 
 // Called every frame
@@ -105,19 +82,45 @@ void APlayerCharacter::Fire()
 {
 	if (ProjectileClass)
 	{
-		FVector CameraLocation;
-		FRotator CameraRotation;
-		GetActorEyesViewPoint(CameraLocation, CameraRotation);
+		// Get exact position and direction of the center of the screen, where the crosshair lies.
+		APlayerController* PlayerController = Cast<APlayerController>(GetController());
 
-		//MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+		int32 ViewportSizeX, ViewportSizeY;
+		PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
+		FVector2D ViewportCenter(ViewportSizeX * 0.5f, ViewportSizeY * 0.5f);
 
-		//FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+		FVector WorldLocation;
+		FVector WorldDirection;
 
+		PlayerController->DeprojectScreenPositionToWorld(ViewportCenter.X, ViewportCenter.Y, WorldLocation,WorldDirection);
+
+		// Calculate exact shooting direction to crosshair using traces (raycasting)
+		FVector TraceStart = WorldLocation;
+		FVector TraceEnd = TraceStart + (WorldDirection * 10000.0f);
+
+		FHitResult HitResult;
+		FCollisionQueryParams TraceParams;
+		TraceParams.AddIgnoredActor(this);
+		TraceParams.AddIgnoredComponent(Gun);
+		TraceParams.AddIgnoredComponent(FPSMesh);
+
+		GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, TraceParams);
+
+		FVector TargetPoint;
+		if (HitResult.bBlockingHit) 
+		{
+			TargetPoint = HitResult.ImpactPoint;
+		}
+		else
+		{
+			TargetPoint = TraceEnd;
+		}
 		FVector MuzzleLocation = Gun->GetSocketLocation(TEXT("Fire"));
 
-		FRotator MuzzleRotation = CameraRotation;
-		//MuzzleRotation.Pitch += 5.0f;
+		FVector ShotDirection = (TargetPoint - MuzzleLocation).GetSafeNormal();
+		FRotator MuzzleRotation = ShotDirection.Rotation();
 
+		// Shoot projectile
 		UWorld* World = GetWorld();
 		if (World)
 		{
@@ -128,11 +131,14 @@ void APlayerCharacter::Fire()
 			AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
 			if (Projectile)
 			{
-				FVector LaunchDirection = MuzzleRotation.Vector();
-				Projectile->FireInDirection(LaunchDirection);
+				Projectile->FireInDirection(ShotDirection);
 			}
 		}
 
+		//DrawDebugLine(GetWorld(), TraceStart, TargetPoint, FColor::Red, false, 1.0f, 0, 1.0f);
+		//DrawDebugLine(GetWorld(), MuzzleLocation, TargetPoint, FColor::Blue, false, 1.0f, 0, 1.0f);
+
+		// Play animation
 		if (FireAnimation != nullptr)
 		{
 			// Get the animation object for the arms mesh
