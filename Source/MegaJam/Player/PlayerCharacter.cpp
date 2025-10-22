@@ -1,5 +1,7 @@
 #include "MegaJam/Player/PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "MegaJam/Projectile.h"
 
 // Sets default values
@@ -115,12 +117,13 @@ void APlayerCharacter::Fire()
 		{
 			TargetPoint = TraceEnd;
 		}
+
+		// Shoot projectile
 		FVector MuzzleLocation = Gun->GetSocketLocation(TEXT("Fire"));
 
 		FVector ShotDirection = (TargetPoint - MuzzleLocation).GetSafeNormal();
 		FRotator MuzzleRotation = ShotDirection.Rotation();
 
-		// Shoot projectile
 		UWorld* World = GetWorld();
 		if (World)
 		{
@@ -147,6 +150,14 @@ void APlayerCharacter::Fire()
 			{
 				AnimInstance->Montage_Play(FireAnimation, 1.f);
 			}
+		}
+
+		// Play particle effect
+		if (MuzzleFlash != nullptr)
+		{
+			FRotator RotationOffset(0.0f, -90.0f, 0.0f);
+			UNiagaraComponent* Spawn = UNiagaraFunctionLibrary::SpawnSystemAttached(MuzzleFlash, Gun, FName(TEXT("Fire")), FVector::ZeroVector, RotationOffset, EAttachLocation::SnapToTarget, true);
+
 		}
 	}
 }
